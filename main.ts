@@ -1,6 +1,6 @@
 import { EditorExtensions } from "editor-enhancements";
 import { Plugin, MarkdownView, Editor } from "obsidian";
-import { AutoLinkTitleSettings, DEFAULT_SETTINGS } from './settings'
+import { AutoLinkTitleSettings, DEFAULT_SETTINGS } from "./settings";
 import { CheckIf } from "checkif";
 import getPageTitle from "scraper";
 
@@ -18,11 +18,11 @@ export default class AutoLinkTitle extends Plugin {
 
     // Listen to paste event
     this.pasteFunction = this.pasteUrlWithTitle.bind(this);
-    this.app.workspace.containerEl.addEventListener(
-      "paste",
-      this.pasteFunction,
-      true
-    );
+    // this.app.workspace.containerEl.addEventListener(
+    //   "paste",
+    //   this.pasteFunction,
+    //   true
+    // );
 
     this.addCommand({
       id: "enhance-url-with-title",
@@ -110,15 +110,17 @@ export default class AutoLinkTitle extends Plugin {
   }
 
   fetchUrlTitle(text: string): Promise<string> {
-    return getPageTitle(text).then(title => {
-      if (title == null || title == "") {
+    return getPageTitle(text)
+      .then((title) => {
+        if (title == null || title == "") {
           return "Title Unknown";
-      }
-      return title.trim();
-    }).catch((error) => {
-      // console.error(error)
-      return "Site Unreachable"
-    });
+        }
+        return title.trim();
+      })
+      .catch((error) => {
+        // console.error(error)
+        return "Site Unreachable";
+      });
   }
 
   private getEditor(): Editor {
