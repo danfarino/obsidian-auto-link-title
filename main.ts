@@ -90,6 +90,12 @@ export default class AutoLinkTitle extends Plugin {
   }
 
   convertUrlToTitledLink(editor: Editor, text: string): void {
+    const m = /^https:\/\/netskope.atlassian.net\/browse\/(.+)/.exec(text);
+    if (m) {
+      editor.replaceSelection(`[${m[1]}](${text})`);
+      return;
+    }
+
     // Generate a unique id for find/replace operations for the title.
     let pasteId = `Fetching Title#${this.createBlockHash()}`;
 
