@@ -96,6 +96,14 @@ export default class AutoLinkTitle extends Plugin {
       return;
     }
 
+    m = /^https:\/\/netskope\.atlassian\.net\/wiki\/spaces\/([^/]+)\/pages\/\d+\/(.+)/.exec(text);
+    if (m) {
+      const space = m[1];
+      const title = decodeURIComponent(m[2]).replace(/\+/g, ' ');
+      editor.replaceSelection(`[Confluence ${space} - ${title}](${text})`)
+      return;
+    }
+
     if (text.startsWith('https://netskope.slack.com/archives/')) {
       editor.replaceSelection(`[Slack](${text})`);
       return;
