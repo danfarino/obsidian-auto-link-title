@@ -90,9 +90,14 @@ export default class AutoLinkTitle extends Plugin {
   }
 
   convertUrlToTitledLink(editor: Editor, text: string): void {
-    const m = /^https:\/\/netskope.atlassian.net\/browse\/(.+)/.exec(text);
+    let m = /^https:\/\/netskope.atlassian.net\/browse\/(.+)/.exec(text);
     if (m) {
       editor.replaceSelection(`[${m[1]}](${text})`);
+      return;
+    }
+
+    if (text.startsWith('https://netskope.slack.com/archives/')) {
+      editor.replaceSelection(`[Slack](${text})`);
       return;
     }
 
