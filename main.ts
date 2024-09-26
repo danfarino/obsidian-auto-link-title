@@ -1,5 +1,5 @@
 import { EditorExtensions } from "editor-enhancements";
-import { Plugin, MarkdownView, Editor } from "obsidian";
+import { Plugin, MarkdownView, Editor, requestUrl } from "obsidian";
 import { AutoLinkTitleSettings, DEFAULT_SETTINGS } from "./settings";
 import { CheckIf } from "checkif";
 import getPageTitle from "scraper";
@@ -90,13 +90,7 @@ export default class AutoLinkTitle extends Plugin {
   }
 
   convertUrlToTitledLink(editor: Editor, text: string): void {
-    let m = /^https:\/\/netskope\.atlassian\.net\/browse\/(.+)/.exec(text);
-    if (m) {
-      editor.replaceSelection(`[${m[1]}](${text})`);
-      return;
-    }
-
-    m = /^https:\/\/netskope\.atlassian\.net\/wiki\/spaces\/([^/]+)\/pages\/\d+\/(.+)/.exec(text);
+    let m = /^https:\/\/netskope\.atlassian\.net\/wiki\/spaces\/([^/]+)\/pages\/\d+\/(.+)/.exec(text);
     if (m) {
       const space = m[1];
       const title = decodeURIComponent(m[2]).replace(/\+/g, ' ');
@@ -128,8 +122,37 @@ export default class AutoLinkTitle extends Plugin {
     });
   }
 
-  fetchUrlTitle(text: string): Promise<string> {
-    return getPageTitle(text)
+  async fetchUrlTitle(text: string): Promise<string> {
+    console.log("["+text+"]")
+    let m = /^https:\/\/netskope\.atlassian\.net\/browse\/([A-Z]+-\d+)$/.exec(text);
+    if (m) {
+      const issueKey = m[1];
+
+      const username = process.env["JIRA_USER"];
+      if (!username) {
+        console.error("missing JIRA_USER");
+        return issueKey;
+      }
+
+      const password = process.env["JIRA_PASSWORD"];
+      if (!password) {
+        console.error("missing JIRA_PASSWORD");
+        return issueKey;
+      }
+
+      const url = "https://netskope.atlassian.net/rest/api/2/issue/"+issueKey;
+
+      const resp = await requestUrl({
+          url,
+          headers: {
+            Authorization: 'Basic ' + btoa(username+":"+password),
+          },
+        });
+
+      return issueKey + " - " + resp.json.fields.summary;
+    }
+
+    return await getPageTitle(text)
       .then((title) => {
         if (title == null || title == "") {
           return "Title Unknown";
